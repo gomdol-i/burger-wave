@@ -1,0 +1,496 @@
+/* =========================================================
+   버거웨이브 웹 대문 스타일 (2차 수정 · 2026-11-01)
+   - 크기 단위: rem (1rem = 16px). 주석의 "기존 → 변경" 값은 px 기준이다.
+   - 글자 크기 규칙: 기존 +2px, 그래도 12px 미만이면 12px, 본문 설명은 16px.
+   ========================================================= */
+
+/* [01] 이 부분은 고급·빈티지 색상 팔레트를 적용(수정)한 부분이다. 숲색·먹색 바탕, 크림 종이, 머스터드 골드, 토마토 레드로 바꿨다. 모든 글자/배경 조합은 명도 대비 4.5:1 이상으로 맞췄다. */
+:root{
+  --forest:#13211a;      /* 깊은 숲색 바탕 */
+  --forest-2:#1b2c23;
+  --ink:#221c17;         /* 본문 잉크색 (크림 위 대비 14.35:1) */
+  --char:#1b1714;
+  --cream:#f5ecda;       /* 크림 종이 */
+  --cream-2:#ece0c6;     /* 카드 바탕 */
+  --cream-text:#f1e6cf;  /* 어두운 바탕 위 글자 (대비 13.46:1) */
+  --cream-muted:#bfb398; /* 어두운 바탕 위 보조 글자 (대비 8.03:1) */
+  --muted:#5d5345;       /* 크림 위 보조 글자 (대비 6.42:1) */
+  --gold:#d6a640;        /* 머스터드 골드 (숲색 위 대비 7.45:1) */
+  --tomato:#a33a27;      /* 토마토 레드 (크림 위 대비 5.61:1) */
+  --green:#7fcf83; --amber:#e8ab3c;
+  --line:#d6c8aa;
+  --serif:'Noto Serif KR',serif;
+  --sans:'Noto Sans KR',system-ui,sans-serif;
+  --script:'Cormorant Garamond','Noto Serif KR',serif;
+  --shadow:0 18px 40px -22px #2a1b0e80;
+}
+
+/* [02] 이 부분은 기본 글자 크기를 브라우저 기본값(100% = 16px)으로 되돌리고 rem 단위를 쓰도록 수정한 부분이다. 사용자가 브라우저 글자 크기를 키우면 화면 글자도 함께 커진다. */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:1rem;line-height:1.7;-webkit-font-smoothing:antialiased;position:relative}
+img,video{display:block;max-width:100%}
+button,a,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{text-decoration:none}
+
+/* [03] 이 부분은 빈티지 종이 질감을 적용한 부분이다. 이미지 파일 없이 CSS 안의 SVG 노이즈를 아주 옅게 깔았다. */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;opacity:.07;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+/* [04] 이 부분은 '메뉴 바로가기' 링크와 키보드 초점 표시를 추가한 부분이다. (웹 접근성: 키보드로 어디에 있는지 보이게 함) */
+.skip-link{position:absolute;left:1rem;top:-4rem;z-index:200;background:var(--gold);color:var(--char);padding:.6rem 1rem;font-weight:700}
+.skip-link:focus{top:1rem}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* [05] 이 부분은 좌측 상단 타임 표시를 강화한 부분이다. 상단 바 높이 34px → 52px, 안내 글자 기존 10px → 12px, 카운트다운 숫자는 22px 크기의 세리프 숫자로 크게 키웠다. */
+.topbar{min-height:3.25rem;background:var(--char);color:var(--cream-text);display:flex;align-items:center;gap:1.5rem;padding:.5rem 6%;border-bottom:1px solid #d6a64033;transition:background .4s}
+.live-clock{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.live-label{font-size:.875rem;font-weight:700;letter-spacing:.02em}               /* 기존 10px → 14px */
+.live-digits{font-family:var(--serif);font-size:1.375rem;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:.04em;line-height:1;display:inline-flex}  /* 신규 22px */
+.event-chip{font-size:.75rem;font-weight:700;background:var(--gold);color:var(--char);padding:.2rem .6rem;border-radius:2rem;animation:chip 1.2s ease-in-out infinite}  /* 신규 12px */
+.topbar-msg{margin:0 auto;font-size:.75rem;letter-spacing:.06em;color:var(--cream-muted)}   /* 기존 10px → 12px */
+.topbar-place{font-size:.75rem;letter-spacing:.18em;color:var(--cream-muted)}               /* 기존 9px → 12px */
+body.event-live .topbar{background:linear-gradient(90deg,#3a2a0f,var(--char) 60%)}
+
+/* [06] 이 부분은 타임이 움직이도록 만든 애니메이션이다. 숫자가 바뀔 때 위에서 내려오듯 넘어가고(tick), 상태 표시등이 깜빡인다(영업 중 초록 / 준비 중 호박 / 이벤트 중 금색). */
+.live-digits span{display:inline-block;min-width:.62em;text-align:center}
+.live-digits span.colon{min-width:.3em;opacity:.7}
+.live-digits span.tick{animation:tick .38s ease-out}
+@keyframes tick{0%{transform:translateY(-45%);opacity:0}100%{transform:none;opacity:1}}
+.status-light{width:.7rem;height:.7rem;border-radius:50%;background:var(--amber);flex:none;animation:blink 1.6s ease-in-out infinite;box-shadow:0 0 0 .3rem #e8ab3c26}
+.status-light.is-open{background:var(--green);box-shadow:0 0 0 .3rem #7fcf8326}
+.status-light.is-ready{background:var(--amber);box-shadow:0 0 0 .3rem #e8ab3c26}
+.status-light.is-event{background:var(--gold);box-shadow:0 0 0 .35rem #d6a64040;animation-duration:.8s}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes chip{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+/* [07] 이 부분은 머리말(로고·메뉴) 디자인을 수정한 부분이다. 메뉴 글자 기존 11px → 14px, 로고 보조문구 기존 7px → 12px. */
+.site-header{height:5.5rem;padding:0 6%;display:flex;align-items:center;gap:2rem;background:var(--cream);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40}
+.brand{display:flex;align-items:center;gap:.7rem;line-height:1}
+.brand img{width:2.9rem;height:2.9rem}
+.brand b{font-family:var(--serif);font-weight:900;font-size:1.25rem;letter-spacing:.03em;color:var(--ink)}   /* 기존 17px → 20px */
+.brand b span{color:var(--tomato);margin-left:.25rem}
+.brand small{display:block;font-family:var(--sans);font-size:.75rem;font-weight:500;letter-spacing:.16em;color:var(--muted);margin-top:.35rem}  /* 기존 7px → 12px */
+.main-nav{display:flex;gap:2.2rem;margin-left:auto;font-size:.875rem;font-weight:700;letter-spacing:.06em}    /* 기존 11px → 14px */
+.main-nav a{padding:.6rem 0;position:relative}
+.main-nav a::after{content:"";position:absolute;left:0;bottom:.2rem;width:0;height:2px;background:var(--tomato);transition:width .25s}
+.main-nav a:hover::after{width:100%}
+.mobile-toggle{display:none}
+
+/* [08] 이 부분은 '장바구니' 버튼 디자인이다. 기존 'CART' 10px → '장바구니' 14px, 줄바꿈 없이 한 줄로 보이게 했다(white-space:nowrap). */
+.cart-open{position:relative;display:flex;align-items:center;gap:.5rem;padding:.55rem .9rem;border:1px solid var(--ink);background:transparent;font-size:.875rem;font-weight:700;white-space:nowrap;transition:background .2s,color .2s}
+.cart-open:hover{background:var(--ink);color:var(--cream)}
+.cart-icon{width:1.25rem;height:1.25rem}
+.cart-badge{min-width:1.6rem;height:1.6rem;padding:0 .3rem;border-radius:1rem;background:var(--gold);color:var(--char);display:grid;place-items:center;font-size:.8125rem;font-weight:700}  /* 기존 10px → 13px */
+
+/* [09] 이 부분은 장바구니 개수가 늘어날 때 터지는 폭죽 애니메이션과 배지 튀어오르기(pop)를 적용한 부분이다. 입자는 script.js가 만들고 0.8초 뒤 지운다. */
+.burst-layer{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:5}
+.spark{position:absolute;left:0;top:0;width:.4rem;height:.4rem;border-radius:50%;background:var(--c,var(--gold));transform:translate(-50%,-50%);animation:spark var(--t,.8s) cubic-bezier(.15,.7,.3,1) forwards}
+.spark.line{width:.15rem;height:.65rem;border-radius:.1rem}
+@keyframes spark{
+  0%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1);opacity:1}
+  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--r,0deg)) scale(.25);opacity:0}}
+.cart-badge.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}
+
+/* [10] 이 부분은 대문 배경 영상을 적용한 부분이다. 사진을 맨 아래에 깔고 그 위에 영상을 덮어, 영상이 안 나오면 사진이 보인다. 1280×720 영상이 큰 화면에서 거칠어 보이지 않게 따뜻한 색 보정과 어두운 그라데이션을 얹었다. */
+.hero{position:relative;height:min(46rem,86vh);min-height:34rem;overflow:hidden;background:var(--forest);color:var(--cream-text)}
+.hero-media,.hero-photo,.hero-video{position:absolute;inset:0;width:100%;height:100%}
+.hero-photo,.hero-video{object-fit:cover;object-position:center 55%}
+.hero-video{filter:saturate(1.08) sepia(.14) contrast(1.05)}
+.hero.no-video .hero-video{display:none}
+.hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,#0d1510f2 0%,#0d1510cc 36%,#0d151044 72%,#0d151022 100%),linear-gradient(0deg,#0d1510b3,transparent 30%),radial-gradient(ellipse at 70% 40%,#d6a64018,transparent 60%)}
+
+/* [11] 이 부분은 대문 문구 글꼴과 크기를 수정한 부분이다. 제목은 세리프로 바꾸고 기존 39~66px → 41~68px(+2px), 설명문 기존 14px → 16px, 영문 소제목 기존 10px → 12px 이상. */
+.hero-copy{position:absolute;left:9%;top:50%;transform:translateY(-50%);max-width:40rem;z-index:2}
+.eyebrow{margin:0 0 1.1rem;font-family:var(--script);font-style:italic;font-weight:600;font-size:1.25rem;letter-spacing:.04em;color:var(--gold)}  /* 기존 10px → 20px(장식 영문) */
+.eyebrow.dark{color:var(--tomato)}
+.hero h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.5625rem,5vw,4.25rem);line-height:1.2;letter-spacing:-.03em;margin:0;text-shadow:0 2px 24px #0008}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero-desc{font-size:1rem;line-height:1.85;color:var(--cream-text);margin:1.4rem 0 1.9rem;max-width:34rem}   /* 기존 14px → 16px */
+.hero-actions{display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap}
+.button{min-height:3.1rem;padding:0 1.4rem;display:inline-flex;align-items:center;gap:1.4rem;font-size:.9375rem;font-weight:700;letter-spacing:.02em}   /* 기존 12px → 15px */
+.gold{background:var(--gold);color:var(--char);box-shadow:0 10px 26px -12px #d6a640aa;transition:transform .2s}
+.gold:hover{transform:translateY(-2px)}
+.text-link{font-size:.9375rem;color:var(--cream-text);border-bottom:1px solid #f1e6cf80;padding-bottom:.2rem}   /* 기존 11px → 15px */
+.hero-stamp{position:absolute;right:8%;top:12%;z-index:2;width:7.5rem;height:7.5rem;border:1px solid #d6a640aa;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;transform:rotate(-8deg);color:var(--gold);text-align:center;outline:1px dashed #d6a64055;outline-offset:-.5rem}
+.hero-stamp span,.hero-stamp small{font-size:.75rem;letter-spacing:.2em}   /* 기존 8~9px → 12px */
+.hero-stamp b{font-family:var(--serif);font-size:1rem;color:var(--cream-text)}
+
+/* [12] 이 부분은 영상 '일시정지/재생' 버튼 디자인이다. (웹 접근성: 움직이는 화면을 멈출 수 있게 함) */
+.video-toggle{position:absolute;right:6%;bottom:1.6rem;z-index:3;font-size:.8125rem;font-weight:700;padding:.45rem .9rem;border:1px solid #f1e6cf88;background:#0d151099;color:var(--cream-text);backdrop-filter:blur(4px)}
+.hero.no-video .video-toggle{display:none}
+
+/* [13] 이 부분은 대문 아래 영업 띠를 두 타임 구조로 수정한 부분이다. 현재 타임 카드가 금색 테두리로 강조된다. 글자 기존 8~13px → 12~16px. */
+.order-strip{display:flex;align-items:center;gap:2rem;padding:1.4rem 9%;background:var(--cream-2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.strip-status{display:flex;align-items:center;gap:.8rem}
+.strip-status p{margin:0;display:flex;flex-direction:column;line-height:1.35}
+.strip-status strong{font-size:.9375rem}                                         /* 기존 12px → 15px */
+.strip-status span{font-family:var(--serif);font-weight:900;font-size:1.25rem;font-variant-numeric:tabular-nums;color:var(--tomato)}
+.slots{display:flex;gap:.8rem;margin:0;padding:0;list-style:none}
+.slots li{border:1px solid var(--line);background:var(--cream);padding:.5rem 1rem;display:flex;flex-direction:column;line-height:1.3;transition:border-color .3s,box-shadow .3s}
+.slots small{font-size:.75rem;font-weight:700;letter-spacing:.08em;color:var(--muted)}   /* 기존 8px → 12px */
+.slots b{font-family:var(--serif);font-size:1rem}                                 /* 기존 13px → 16px */
+.slots li.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold),0 6px 16px -10px #d6a640}
+.strip-note{margin:0 0 0 auto;font-size:.8125rem;color:var(--muted)}             /* 기존 11px → 13px */
+
+/* [14] 이 부분은 섹션 제목을 세리프로 바꾸고 크기를 수정한 부분이다. 제목 기존 42px → 44px, 오른쪽 설명 기존 11px → 16px. */
+.section-wrap{padding:6rem 9%}
+.section-title{display:flex;justify-content:space-between;align-items:end;gap:2rem;flex-wrap:wrap}
+.section-title h2,.visit h2,.event h2,.story h2{font-family:var(--serif);font-weight:900;letter-spacing:-.03em;margin:0}
+.section-title h2{font-size:2.75rem;line-height:1.2}
+.section-title h2 em{font-style:normal;color:var(--tomato)}
+.menu-line{margin:0;font-family:var(--serif);font-size:1rem;line-height:1.8;color:var(--muted);text-align:right}
+
+/* [15] 이 부분은 메뉴 탭(전체/버거 단품/세트메뉴) 디자인이다. 기존 11px → 14px. */
+.tabs{display:flex;gap:1.8rem;border-bottom:1px solid var(--line);margin-top:2.4rem}
+.tabs button{background:none;border:0;padding:0 0 .9rem;font-size:.875rem;font-weight:700;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.active{color:var(--ink);border-bottom-color:var(--tomato)}
+.tabs sup{color:var(--tomato);font-size:.75rem;margin-left:.2rem}
+
+/* [16] 이 부분은 상품 카드를 먹음직스럽게 수정한 부분이다. 사진에 따뜻한 색 보정과 확대 효과, 빈티지 라벨을 넣었다. 라벨 기존 8px → 12px, 상품명 기존 16px → 21px(세리프), 설명 기존 10px → 16px, 가격 기존 13px → 18px. */
+.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2rem}
+.product{background:var(--cream-2);border:1px solid var(--line);display:flex;flex-direction:column;box-shadow:var(--shadow);min-width:0}
+.product-img{position:relative;aspect-ratio:4/3;overflow:hidden;background:#d9c9a7}
+.product-img img{width:100%;height:100%;object-fit:cover;filter:saturate(1.1) sepia(.08) contrast(1.04);transition:transform .6s}
+.product:hover .product-img img{transform:scale(1.06)}
+.product-img::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 35%,transparent 45%,#2a1b0e55)}
+.tag{position:absolute;left:.9rem;top:.9rem;z-index:1;padding:.25rem .6rem;font-size:.75rem;font-weight:700;letter-spacing:.08em;background:var(--gold);color:var(--char);border:1px solid #00000022}
+.tag.red{background:var(--tomato);color:#fff8ec}
+.tag.dark{background:var(--char);color:var(--cream-text)}
+.add-btn{position:absolute;right:.9rem;bottom:.9rem;z-index:1;width:3rem;height:3rem;border:0;border-radius:50%;background:var(--cream);color:var(--ink);font-size:1.6rem;line-height:1;box-shadow:0 6px 18px #0004;transition:transform .2s,background .2s}
+.add-btn:hover{background:var(--gold);transform:rotate(90deg)}
+.product-info{padding:1.2rem 1.3rem 1.4rem;display:flex;flex-direction:column;gap:.45rem;flex:1}
+.product-info small{font-size:.75rem;font-weight:700;letter-spacing:.12em;color:var(--tomato)}
+.product-info h3{font-family:var(--serif);font-size:1.3125rem;font-weight:900;margin:0;line-height:1.35}
+.product-info p{margin:0;font-size:1rem;line-height:1.65;color:var(--muted)}
+.product-foot{margin-top:auto;padding-top:.8rem;border-top:1px dashed var(--line);display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
+.price{font-family:var(--serif);font-size:1.125rem;font-weight:900}
+.drink{display:flex;align-items:center;gap:.4rem;font-size:.8125rem;color:var(--muted)}
+.drink select{font-size:.875rem;padding:.3rem .4rem;border:1px solid var(--line);background:var(--cream);color:var(--ink)}
+.add-text{border:1px solid var(--ink);background:transparent;padding:.4rem .9rem;font-size:.875rem;font-weight:700}
+.add-text:hover{background:var(--ink);color:var(--cream)}
+
+/* [17] 이 부분은 메뉴 아래 안내문 크기를 수정한 부분이다. 기존 9px → 13px. */
+.footnote{color:var(--muted);font-size:.8125rem;margin-top:1.4rem;line-height:1.8}
+
+/* [18] 이 부분은 새로 만든 로또 이벤트 영역 디자인이다. 빈티지 티켓 모양(점선 테두리·톱니 모서리)으로 꾸미고, 진행 중에는 상태 문구가 금색으로 깜빡인다. */
+.event{background:var(--forest);padding:5.5rem 9%;color:var(--cream-text)}
+.event-ticket{max-width:56rem;margin:0 auto;padding:2.8rem 3rem;border:1px solid #d6a64066;outline:1px dashed #d6a64055;outline-offset:-.8rem;background:radial-gradient(circle at 0 50%,var(--forest) .9rem,transparent .95rem),radial-gradient(circle at 100% 50%,var(--forest) .9rem,transparent .95rem),var(--forest-2);text-align:center}
+.event h2{font-size:2.25rem;line-height:1.3}
+.event h2 em{font-style:normal;color:var(--gold)}
+.event-status{display:inline-block;margin:1.3rem 0 1.6rem;padding:.55rem 1.2rem;border:1px solid #d6a64066;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums}
+.event-status[data-state="live"]{background:var(--gold);color:var(--char);animation:chip 1.2s ease-in-out infinite}
+.event-status[data-state="done"]{color:var(--cream-muted)}
+.event-facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#d6a64040;margin:0;border:1px solid #d6a64040}
+.event-facts div{background:var(--forest-2);padding:1rem .6rem}
+.event-facts dt{font-size:.75rem;letter-spacing:.08em;color:var(--cream-muted)}
+.event-facts dd{margin:.3rem 0 0;font-family:var(--serif);font-size:1.0625rem;font-weight:700;color:var(--cream-text)}
+.event-note{margin:1.4rem 0 0;font-size:.875rem;line-height:1.8;color:var(--cream-muted)}
+
+/* [19] 이 부분은 브랜드 스토리 영역을 수정한 부분이다. 본문 기존 11px → 16px, 제목 기존 39px → 41px(세리프), 사진은 기존 이미지를 유지했다. */
+.story{display:grid;grid-template-columns:1fr 1fr;background:var(--char);color:var(--cream-text);min-height:26rem}
+.story-photo{position:relative;overflow:hidden;min-height:22rem}
+.story-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% center;filter:sepia(.25) saturate(1.05) brightness(.8)}
+.story-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 55%,var(--char))}
+.story-copy{padding:4.5rem 10% 4.5rem 4%;align-self:center}
+.story h2{font-size:2.5625rem;line-height:1.35;margin-bottom:1.2rem}
+.story-copy p:not(.eyebrow){font-size:1rem;line-height:1.95;color:var(--cream-muted);margin:0 0 1rem}
+.story-copy .story-sign{font-family:var(--serif);font-weight:700;color:var(--gold);margin-top:1.4rem}
+
+/* [20] 이 부분은 매장 안내 영역 글자 크기를 수정한 부분이다. 제목 기존 36px → 38px, 작은 글자 기존 8~9px → 12~13px, 강조 기존 13px → 16px, 설명 기존 11px → 16px. */
+.visit{display:grid;grid-template-columns:1fr 1fr;gap:6%;align-items:center}
+.visit h2{font-size:2.375rem}
+.visit h2 span{color:var(--tomato)}
+.visit p{font-size:1rem;line-height:1.85;color:var(--muted)}
+.visit-card{background:var(--cream-2);border:1px solid var(--line);padding:1.5rem;display:flex;gap:1rem;align-items:center;box-shadow:var(--shadow)}
+.visit-card>b{width:2.6rem;height:2.6rem;border-radius:50%;background:var(--gold);display:grid;place-items:center;font-size:1.3rem;flex:none}
+.visit-card div{display:flex;flex-direction:column;gap:.3rem}
+.visit-card small{font-size:.75rem;letter-spacing:.12em;color:var(--muted)}
+.visit-card strong{font-size:1rem}
+.visit-card span{font-size:.8125rem;color:var(--muted)}
+
+/* [21] 이 부분은 웹 페이지 하단(footer) 글자 크기를 수정한 부분이다. 소개문 기존 10px → 14px, 하단 메뉴 기존 9px → 13px, 저작권 줄 기존 8px → 12px. */
+footer{background:var(--forest);color:var(--cream-text);padding:3.2rem 9% 1.4rem}
+.footer-main{display:grid;grid-template-columns:1fr 1.2fr 1.8fr;gap:2rem;align-items:start;padding-bottom:2.2rem}
+.footer-main .brand b{color:var(--cream-text);font-size:1.0625rem}
+.footer-main .brand small{color:var(--cream-muted)}
+.footer-main>p{margin:0;font-size:.875rem;line-height:1.9;color:var(--cream-muted)}
+.footer-main nav{display:flex;justify-content:flex-end;gap:1.2rem;flex-wrap:wrap}
+.footer-main nav a,.footer-main nav button{font-size:.8125rem;background:none;border:0;padding:.3rem 0;color:var(--cream-text)}
+.footer-main nav button{color:var(--gold)}
+.footer-bottom{border-top:1px solid #f1e6cf26;padding-top:1.1rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.75rem;color:var(--cream-muted)}
+
+/* [22] 이 부분은 장바구니 서랍 디자인이다. 제목 기존 25px → 27px, 상품명 기존 12px → 15px, 가격·수량 기존 10~11px → 13~14px, 합계 기존 15px → 18px, 안내 기존 9px → 12px. */
+.backdrop{position:fixed;inset:0;background:#0b100dcc;z-index:60;opacity:0;visibility:hidden;transition:.25s}
+.backdrop.open{opacity:1;visibility:visible}
+.drawer{position:fixed;z-index:61;right:0;top:0;height:100dvh;width:min(28rem,100%);background:var(--cream);padding:1.8rem;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .3s;border-left:1px solid var(--line)}
+.drawer.open{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:start;border-bottom:1px solid var(--line);padding-bottom:1.1rem}
+.drawer-head small{font-family:var(--script);font-style:italic;font-size:1.125rem;color:var(--tomato)}
+.drawer-head h2{margin:.3rem 0 0;font-family:var(--serif);font-size:1.6875rem}
+.drawer-head h2 span{font-size:.9375rem;color:var(--muted)}
+.drawer-close,.dialog-x{border:1px solid var(--line);background:none;width:2.4rem;height:2.4rem;font-size:1.5rem;line-height:1}
+.cart-items{overflow:auto;flex:1}
+.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);text-align:center}
+.empty>span{font-size:2.5rem;color:var(--line)}
+.empty p{font-size:.9375rem}
+.empty button{border:0;border-bottom:1px solid var(--ink);background:none;font-size:.875rem;padding:.3rem}
+.cart-row{display:grid;grid-template-columns:4.2rem 1fr auto;gap:.8rem;align-items:center;padding:1rem 0;border-bottom:1px solid var(--line)}
+.cart-row img{width:4.2rem;height:4.2rem;object-fit:cover}
+.cart-row h3{font-size:.9375rem;margin:0 0 .2rem;line-height:1.4}
+.cart-row p{font-size:.8125rem;margin:0;color:var(--muted)}
+.qty{display:flex;align-items:center;gap:.6rem;margin-top:.5rem}
+.qty button{width:2rem;height:2rem;border:1px solid var(--line);background:transparent;font-size:1rem;line-height:1}
+.qty span{font-size:.875rem;min-width:1.4rem;text-align:center;font-weight:700}
+.row-price{text-align:right;font-size:.875rem;font-weight:700}
+.remove{display:block;margin:.5rem 0 0 auto;border:0;background:none;color:var(--muted);font-size:.75rem;text-decoration:underline}
+.drawer-total{border-top:1px solid var(--line);padding-top:.9rem}
+.drawer-total>div{display:flex;justify-content:space-between;gap:1rem;margin:.6rem 0;font-size:.875rem}
+.drawer-total>div>span,.drawer-total>div>small{color:var(--muted)}
+.drawer-total>div>small{font-size:.75rem;text-align:right}
+.grand-total{font-size:1.125rem!important;font-weight:700;border-top:1px solid var(--line);padding-top:.8rem;margin-top:.9rem!important}
+.grand-total b{font-family:var(--serif);color:var(--tomato)}
+.drawer-total>button{min-height:3rem;width:100%;background:var(--gold);border:0;font-size:.9375rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;padding:0 1rem;margin-top:.9rem}
+.drawer-note{display:block;text-align:center;color:var(--muted);font-size:.75rem;margin-top:.6rem}
+
+/* [23] 이 부분은 알림 메시지(toast)와 관리자 안내창 글자 크기를 수정한 부분이다. 알림 기존 11px → 14px, 안내창 본문 기존 11px → 15px. */
+.toast{position:fixed;z-index:80;left:50%;bottom:1.8rem;transform:translate(-50%,1rem);padding:.8rem 1.2rem;background:var(--char);color:var(--cream-text);font-size:.875rem;opacity:0;visibility:hidden;transition:.25s;border-left:3px solid var(--gold)}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+dialog{border:1px solid var(--line);padding:2rem;max-width:25rem;width:calc(100% - 2.25rem);text-align:center;background:var(--cream);color:var(--ink);box-shadow:0 25px 90px #0005}
+dialog::backdrop{background:#0b100dcc}
+.dialog-x{position:absolute;right:.9rem;top:.7rem;border:0}
+.dialog-mark{display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:50%;background:var(--gold);margin:0 auto 1rem;font-family:var(--serif)}
+#admin-dialog>small{display:block;font-family:var(--script);font-style:italic;font-size:1.125rem;color:var(--tomato)}
+#admin-dialog h2{font-family:var(--serif);font-size:1.5rem;margin:.4rem 0 .7rem}
+#admin-dialog p{font-size:.9375rem;line-height:1.8;color:var(--muted)}
+.dialog-ok{border:0;background:var(--forest);color:var(--cream-text);padding:.75rem 2.2rem;margin-top:.6rem;font-size:.875rem}
+
+/* [24] 이 부분은 태블릿(900px 이하) 반응형을 수정한 부분이다. 상품 2열, 여백 축소. */
+@media (max-width:900px){
+  .site-header{padding:0 4%;gap:1.2rem}
+  .main-nav{gap:1.2rem}
+  .hero-copy{left:6%;right:6%}
+  .section-wrap,.event,.order-strip{padding-left:6%;padding-right:6%}
+  .products{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .event-facts{grid-template-columns:repeat(2,1fr)}
+  .footer-main{grid-template-columns:1fr 1fr}
+  .footer-main nav{grid-column:1/-1;justify-content:flex-start}
+  .topbar-place{display:none}
+}
+
+/* [25] 이 부분은 모바일(640px 이하) 반응형을 수정한 부분이다. 기존 모바일 글자 6~9px을 모두 12px 이상으로 올렸고, '장바구니' 글자는 줄바꿈 없이 유지했다. 375px 화면에서도 가로 스크롤이 생기지 않게 했다. */
+@media (max-width:640px){
+  .topbar{padding:.5rem 4%;gap:.6rem}
+  .topbar-msg{display:none}
+  .live-label{font-size:.8125rem}
+  .live-digits{font-size:1.25rem}
+  .site-header{height:4.5rem;gap:.6rem}
+  .brand img{width:2.4rem;height:2.4rem}
+  .brand b{font-size:1.0625rem}
+  .brand small{font-size:.75rem;letter-spacing:.08em}
+  .mobile-toggle{display:block;margin-left:auto;border:0;background:none;font-size:1.5rem;padding:.3rem .5rem}
+  .main-nav{display:none;position:absolute;left:0;right:0;top:100%;background:var(--cream);padding:.6rem 6% 1rem;box-shadow:0 12px 18px #0002;flex-direction:column;gap:0;margin:0}
+  .main-nav.open{display:flex}
+  .main-nav a{padding:.8rem 0;border-bottom:1px solid var(--line)}
+  .cart-open{padding:.45rem .6rem;gap:.35rem;font-size:.8125rem}
+  .cart-icon{display:none}
+  .hero{height:38rem;min-height:0}
+  .hero-photo,.hero-video{object-position:62% center}
+  .hero-shade{background:linear-gradient(0deg,#0d1510f0 5%,#0d1510aa 55%,#0d151055),radial-gradient(ellipse at 70% 30%,#d6a64018,transparent 60%)}
+  .hero-copy{top:auto;bottom:4.5rem;transform:none}
+  .hero h1{font-size:2.8125rem}  /* 모바일 제목 기존 43px → 45px */
+  .hero-stamp{width:5.6rem;height:5.6rem;top:1.2rem;right:5%}
+  .hero-stamp b{font-size:.875rem}
+  .video-toggle{bottom:1rem}
+  .order-strip{gap:1rem}
+  .slots{width:100%}
+  .slots li{flex:1}
+  .strip-note{margin:0}
+  .section-wrap{padding-top:4rem;padding-bottom:4rem}
+  .section-title h2{font-size:2.125rem}  /* 기존 32px → 34px */
+  .menu-line{text-align:left}
+  .tabs{gap:1.1rem;overflow-x:auto}
+  .tabs button{white-space:nowrap}
+  .products{grid-template-columns:1fr;gap:1.4rem}
+  .event{padding:4rem 5%}
+  .event-ticket{padding:2.2rem 1.3rem}
+  .event h2{font-size:1.75rem}
+  .story{grid-template-columns:1fr}
+  .story-photo{min-height:14rem}
+  .story-photo::after{background:linear-gradient(0deg,var(--char),transparent 60%)}
+  .story-copy{padding:1rem 6% 3.5rem}
+  .story h2{font-size:2.1875rem}  /* 기존 33px → 35px */
+  .visit{grid-template-columns:1fr;gap:1.4rem}
+  .visit h2{font-size:2.0625rem}  /* 기존 31px → 33px */
+  .footer-main{grid-template-columns:1fr;gap:1rem}
+  .footer-main nav{grid-column:auto}
+  .footer-bottom{flex-direction:column;gap:.4rem}
+  .drawer{padding:1.4rem 1.1rem}
+}
+
+/* [26] 이 부분은 '동작 줄이기' 설정 사용자를 위한 부분이다. 깜빡임·숫자 넘김·폭죽을 끄고, 배지 강조만 남긴다. 영상은 script.js에서 멈추고 사진으로 바꾼다. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .cart-badge.pop{outline:2px solid var(--tomato);outline-offset:2px}
+}
+
+/* [27] 이 부분은 맨 위로 올라가는 'TOP' 버튼 디자인을 추가한 부분이다. 오른쪽 아래에 고정되고, 나타날 때 아래에서 살짝 떠오른다. 글자 13px, 장바구니 서랍(z-index 60~61)보다 아래 층(55)에 둬서 서랍을 가리지 않는다. */
+.to-top{position:fixed;right:1.5rem;bottom:1.5rem;z-index:55;width:3.4rem;height:3.4rem;border-radius:50%;border:1px solid #d6a64099;background:var(--forest);color:var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.05rem;font-size:.8125rem;font-weight:700;letter-spacing:.08em;line-height:1;box-shadow:0 10px 24px -10px #000a;opacity:0;transform:translateY(.8rem);transition:opacity .3s,transform .3s,background .2s}
+.to-top span{font-size:1.125rem}
+.to-top.show{opacity:1;transform:none}
+.to-top:hover{background:var(--gold);color:var(--char)}
+@media (max-width:640px){.to-top{right:1rem;bottom:1rem;width:3rem;height:3rem}}
+
+/* [28] 이 부분은 '결제수단' 선택창의 틀을 추가한 부분이다. 기존 관리자 안내창과 같은 크림·숲색·골드 톤을 쓰되, 위쪽 금색 띠와 점선 구분선으로 주문서(영수증)처럼 보이게 했다. 제목 24px 세리프, 왼쪽 정렬. */
+.pay-dialog{max-width:28rem;text-align:left;padding:2.2rem 2rem 1.6rem;border-top:4px solid var(--gold)}
+.pay-dialog h2,.paid-dialog h2{font-family:var(--serif);font-weight:900;font-size:1.5rem;margin:0 0 1.2rem;letter-spacing:-.02em}
+
+/* [29] 이 부분은 결제 금액과 상품 요약 줄이다. 금액은 28px 세리프 토마토색(크림 위 대비 5.61:1)으로 가장 눈에 띄게 하고, 아래 점선으로 결제수단 영역과 나눴다. */
+.pay-amount{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin:0}
+.pay-amount span{font-size:.875rem;color:var(--muted)}
+.pay-amount b{font-family:var(--serif);font-size:1.75rem;font-weight:900;color:var(--tomato);font-variant-numeric:tabular-nums}
+.pay-items{margin:.3rem 0 0;padding-bottom:1.2rem;border-bottom:1px dashed var(--line);font-size:.875rem;color:var(--muted)}
+
+/* [30] 이 부분은 [계좌이체] [카드결제] 버튼이다. 같은 크기로 나란히 두고, 버튼 이름 15px 굵게(대비 12:1 이상), 설명 12px. 마우스를 올리거나 키보드로 고르면 숲색 테두리로 선택될 곳을 분명히 보여준다. */
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:1.2rem}
+.pay-method{display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:1.2rem .8rem 1rem;background:var(--cream-2);border:1px solid var(--line);color:var(--ink);transition:border-color .15s,background .15s,box-shadow .15s}
+.pay-method svg{width:2rem;height:2rem;color:var(--forest);margin-bottom:.2rem}
+.pay-method span{font-size:.9375rem;font-weight:700}
+.pay-method small{font-size:.75rem;color:var(--muted)}
+.pay-method:hover,.pay-method:focus-visible{background:var(--cream);border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest)}
+.pay-method:active{transform:translateY(1px)}
+.pay-note{margin:1.1rem 0 0;font-size:.75rem;color:var(--muted);text-align:center}
+
+/* [31] 이 부분은 '결제가 되었습니다.' 알림창이다. 숲색 도장(씰)이 살짝 기울어진 채 찍히듯 나타나는 한 번의 움직임으로 결제 완료를 알린다. 결제수단·금액은 15px. '동작 줄이기' 사용자에게는 [26]의 규칙으로 움직임 없이 바로 보인다. */
+.paid-dialog{max-width:24rem;padding:2.2rem 2rem 1.8rem}
+.paid-seal{width:4.5rem;height:4.5rem;margin:0 auto 1.1rem;border-radius:50%;background:var(--forest);color:var(--gold);display:grid;place-items:center;outline:1px dashed #d6a64099;outline-offset:-.4rem;transform:rotate(-6deg)}
+.paid-seal svg{width:2.4rem;height:2.4rem}
+.paid-dialog[open] .paid-seal{animation:stamp .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes stamp{0%{transform:scale(1.5) rotate(-14deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(-6deg)}}
+.paid-dialog h2{margin-bottom:.6rem}
+.paid-detail{margin:0;font-size:.9375rem;color:var(--ink)}
+.paid-detail b{font-family:var(--serif);color:var(--tomato)}
+.paid-dialog .dialog-ok{margin-top:1.3rem;min-width:8rem}
+
+/* [32] 이 부분은 모바일(640px 이하)에서 결제 버튼 두 개를 위아래로 쌓고, 창 안쪽 여백을 줄인 부분이다. */
+@media (max-width:640px){
+  .pay-dialog,.paid-dialog{padding:1.8rem 1.2rem 1.4rem}
+  .pay-methods{grid-template-columns:1fr}
+  .pay-method{flex-direction:row;justify-content:flex-start;gap:.8rem;padding:.9rem 1rem}
+  .pay-method svg{margin:0;width:1.75rem;height:1.75rem}
+  .pay-method small{margin-left:auto}
+}
+
+/* [33] 이 부분은 '찾아오시는길' 영역 배치를 추가한 부분이다. 기존 [20] .visit 규칙은 지우지 않고 뒤에서 덮어써, 왼쪽 안내(좁게)·오른쪽 지도(넓게) 2단을 위쪽 정렬로 맞췄다. 대표 문장은 20px 세리프, 항목 이름 13px·내용 16px. 화면낭독기 전용 글자(.sr-only)도 여기서 정의한다. */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.visit{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);align-items:start}
+#visit,#consult{scroll-margin-top:5.5rem}   /* 메뉴로 이동했을 때 고정 머리말(88px)에 제목이 가려지지 않게 띄움 */
+.visit,.consult{word-break:keep-all;overflow-wrap:anywhere}   /* 한국어 단어가 중간에서 끊기지 않게 단어 단위로 줄바꿈 */
+.visit .visit-lead{margin:.5rem 0 1.8rem;font-family:var(--serif);font-size:1.25rem;font-weight:700;line-height:1.5;color:var(--ink)}
+.visit-facts{margin:0;border-bottom:1px solid var(--line)}
+.visit-facts>div{display:grid;grid-template-columns:5.5rem 1fr;gap:1rem;padding:.9rem 0;border-top:1px solid var(--line)}
+.visit-facts dt{font-size:.8125rem;font-weight:700;color:var(--muted);padding-top:.15rem}
+.visit-facts dd{margin:0;font-size:1rem;line-height:1.7;color:var(--ink)}
+.copy-address{margin-left:.4rem;border:0;border-bottom:1px solid var(--muted);background:none;padding:0;font-size:.8125rem;color:var(--muted);vertical-align:baseline}
+.copy-address:hover{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* [34] 이 부분은 지도 틀과 길찾기 버튼이다. 지도 높이 PC 22rem. 지도가 늦게 뜨거나 막혀도 틀 뒤의 안내 문구가 보이도록 했고, 지도에는 아주 옅은 세피아만 얹어 페이지 톤과 맞췄다. 버튼은 누르는 영역 44px 이상, 글자 14px. */
+.map-frame{position:relative;height:22rem;background:var(--cream-2);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+.map-frame::before{content:attr(data-fallback);position:absolute;inset:0;display:grid;place-items:center;padding:1.5rem;text-align:center;font-size:.875rem;color:var(--muted)}
+.map-frame iframe{position:relative;display:block;width:100%;height:100%;border:0;filter:sepia(.12) saturate(.95)}
+.map-links{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.9rem}
+.map-links a{display:inline-flex;align-items:center;min-height:2.75rem;padding:0 1.1rem;border:1px solid var(--ink);font-size:.875rem;font-weight:700;transition:background .15s,color .15s}
+.map-links a:hover{background:var(--ink);color:var(--cream)}
+
+/* [35] 이 부분은 '1인 창업 상담 신청' 영역의 바탕과 신청서 종이다. 카드 바탕색 위에 크림색 종이 한 장을 올리고, 오른쪽 위에 관공서 신청서처럼 '접수'란을 두어 신청서라는 것을 한눈에 알게 했다. 제목 36px 세리프, 안내문 16px(한 줄 36자 안팎). */
+.consult{background:var(--cream-2);border-top:1px solid var(--line);padding:6rem 9%}
+.consult-form{max-width:52rem;margin:0 auto;background:var(--cream);border:1px solid var(--line);box-shadow:var(--shadow);padding:3rem 3.2rem 2.6rem}
+.consult-head{position:relative;padding-right:7.5rem;margin-bottom:2.2rem;padding-bottom:1.6rem;border-bottom:2px solid var(--ink)}
+.consult-head h2{margin:0;font-family:var(--serif);font-weight:900;font-size:2.25rem;line-height:1.3;letter-spacing:-.03em}
+.consult-head p{margin:.8rem 0 0;max-width:36rem;font-size:1rem;line-height:1.8;color:var(--muted)}
+.receipt-box{position:absolute;top:0;right:0;width:5.5rem;border:1px solid var(--ink);text-align:center}
+.receipt-box span{display:block;padding:.3rem 0;border-bottom:1px solid var(--ink);font-size:.75rem;font-weight:700}
+.receipt-box b{display:block;padding:.9rem 0;font-family:var(--serif);font-size:1rem;color:var(--tomato);transform:rotate(-8deg)}
+
+/* [36] 이 부분은 글자 입력 칸이다. 종이 신청서의 밑줄 칸처럼 아래 선만 두고, 입력 글자는 16px(모바일 자동 확대 방지). 필수 항목은 '필수' 표시, 잘못 입력하면 선이 토마토색으로 바뀌고 바로 아래에 고칠 방법이 13px로 나온다. */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+.field{margin-top:1.4rem}
+.field-row .field{margin-top:0}
+.field label,.choices-set legend{display:block;margin-bottom:.4rem;font-size:.9375rem;font-weight:700;color:var(--ink)}
+.field label em{margin-left:.3rem;font-style:normal;font-size:.75rem;color:var(--tomato)}
+.field input{width:100%;padding:.7rem .1rem;border:0;border-bottom:2px solid var(--line);background:transparent;font-size:1rem;color:var(--ink)}
+.field textarea{width:100%;min-height:7rem;padding:.8rem .9rem;border:1px solid var(--line);background:#fffaf0;font:inherit;font-size:1rem;color:var(--ink);resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--forest)}
+.field input[aria-invalid="true"],.consent input[aria-invalid="true"]+span{border-color:var(--tomato)}
+.field input::placeholder,.field textarea::placeholder{color:#8a7f6c}
+.field-error{margin:.4rem 0 0;font-size:.8125rem;font-weight:700;color:var(--tomato)}
+
+/* [37] 이 부분은 '하나 고르기' 항목(자본금·시기·점포 여부)이다. 작은 동그라미 대신 누르기 쉬운 큰 선택지(높이 44px 이상)로 만들고, 고른 항목은 숲색 바탕·크림 글자(대비 13:1)로 바뀐다. 키보드로 옮겨 다닐 때는 금색 테두리가 보인다. */
+.choices-set{margin:1.8rem 0 0;padding:0;border:0;min-width:0}
+.choices{display:flex;flex-wrap:wrap;gap:.6rem}
+.choice{position:relative;cursor:pointer}
+.choice input{position:absolute;opacity:0;width:1px;height:1px}
+.choice span{display:inline-flex;align-items:center;gap:.55rem;min-height:2.75rem;padding:.5rem 1rem;border:1px solid var(--line);background:var(--cream-2);font-size:.9375rem;line-height:1.4;transition:background .15s,border-color .15s,color .15s}
+.choice span::before{content:"";flex:none;width:.85rem;height:.85rem;border-radius:50%;border:2px solid var(--muted)}
+.choice:hover span{border-color:var(--forest)}
+.choice input:checked+span{background:var(--forest);border-color:var(--forest);color:var(--cream-text)}
+.choice input:checked+span::before{border-color:var(--gold);background:var(--gold);box-shadow:inset 0 0 0 2px var(--forest)}
+.choice input:focus-visible+span{outline:3px solid var(--gold);outline-offset:2px}
+
+/* [38] 이 부분은 개인정보 수집·이용 고지 표와 동의 체크박스다(개인정보 보호법 제15조 제2항 고지 4가지). 항목 이름 13px·내용 14px, [확정 필요]는 연한 골드 바탕으로 눈에 띄게 해 빠뜨리지 않게 했다. 체크박스는 누르는 영역 44px 이상. */
+.privacy-table{width:100%;margin-top:2.4rem;border-collapse:collapse}
+.privacy-table caption{margin-bottom:.6rem;text-align:left;font-family:var(--serif);font-size:1.0625rem;font-weight:700}
+.privacy-table th,.privacy-table td{padding:.7rem .85rem;border:1px solid var(--line);vertical-align:top;text-align:left}
+.privacy-table th{width:9rem;background:var(--cream-2);font-size:.8125rem;font-weight:700;color:var(--muted)}
+.privacy-table td{font-size:.875rem;line-height:1.7;color:var(--ink)}
+.tbd{padding:.05rem .35rem;background:#f1d48e;color:var(--ink);font-weight:700}
+.consent{display:flex;align-items:flex-start;gap:.7rem;min-height:2.75rem;margin-top:1rem;padding:.7rem .8rem;border:1px solid var(--line);background:#fffaf0;cursor:pointer;font-size:.9375rem;line-height:1.6}
+.consent input{flex:none;width:1.25rem;height:1.25rem;margin:.15rem 0 0;accent-color:var(--forest)}
+
+/* [39] 이 부분은 신청 버튼과 시연 안내다. 이 영역에서 가장 눈에 띄는 단 하나의 요소로 골드 버튼을 신청서 폭 가득 채웠다. 버튼 글자 17px 굵게(골드 위 먹색 대비 7.96:1). */
+.consult-submit{display:block;width:100%;min-height:3.6rem;margin-top:1.8rem;padding:.8rem 1rem;border:0;background:var(--gold);color:var(--char);font-size:1.0625rem;font-weight:700;line-height:1.4;box-shadow:0 12px 26px -14px #b8872a;transition:transform .15s,background .15s}
+.consult-submit:hover{background:#e0b14d}
+.consult-submit:active{transform:translateY(1px)}
+.consult-note{margin:.8rem 0 0;text-align:center;font-size:.8125rem;color:var(--muted)}
+
+/* [40] 이 부분은 모바일(640px 이하)에서 지도 높이를 16rem으로 줄이고, 신청서를 1단으로 바꾼 부분이다. 선택지는 한 줄에 하나씩 꽉 차게 놓아 누르기 쉽게 했고, 접수란은 공간이 좁아 숨겼다. */
+@media (max-width:640px){
+  #visit,#consult{scroll-margin-top:4.5rem}   /* 모바일 머리말 72px */
+  .visit{grid-template-columns:1fr;gap:2rem}   /* [33]의 PC 2단 규칙이 [25] 모바일 1단을 덮어쓰지 않도록 다시 1단으로 지정 */
+  .map-frame{height:16rem}
+  .map-links a{flex:1;justify-content:center}
+  .visit-facts>div{grid-template-columns:4.5rem 1fr;gap:.7rem}
+  .consult{padding:4rem 4%}
+  .consult-form{padding:1.8rem 1.1rem 1.6rem}
+  .consult-head{padding-right:0}
+  .consult-head h2{font-size:1.75rem}
+  .receipt-box{display:none}
+  .field-row{grid-template-columns:1fr;gap:0}
+  .field-row .field+.field{margin-top:1.4rem}
+  .choice{flex:1 1 100%}
+  .choice span{width:100%}
+  .privacy-table th{width:6.5rem}
+}
+
+/* [41] 이 부분은 확정 사항 반영에 따라 추가한 디자인이다.
+   - 가맹비 면제 안내: 버튼 바로 위에 골드 왼쪽 띠를 둔 한 줄 안내로, 혜택 금액(300만원)만 굵게 보여준다. 15px.
+   - 보내는 중·실패 안내(consult-status): 실패 시 토마토색 굵은 글씨 14px로 버튼 아래에 나타난다.
+   - 전화번호 링크(tel-link): 밑줄로 누를 수 있음을 알리고, 버튼이 잠긴 동안은 흐리게 표시한다. */
+.consult-benefit{margin:1.8rem 0 0;padding:.75rem 1rem;border-left:4px solid var(--gold);background:#fbf1dc;font-size:.9375rem;line-height:1.6;color:var(--ink)}
+.consult-benefit b{margin-right:.4rem;font-family:var(--serif);font-weight:900;color:var(--tomato)}
+.consult-benefit+.consult-submit{margin-top:.8rem}
+.consult-submit:disabled{opacity:.6;cursor:progress}
+.consult-status{margin:.8rem 0 0;font-size:.875rem;font-weight:700;line-height:1.6;color:var(--tomato)}
+.tel-link{border-bottom:1px solid currentColor}
+
+/* [42] 이 부분은 mailto 방식으로 바뀐 상담 신청 창의 버튼 줄이다. [신청 내용 복사]는 테두리만 있는 보조 버튼, [확인]은 기존 숲색 버튼으로 나란히 두었다. 모바일에서는 위아래로 쌓는다. 글자 14px, 누르는 영역 44px 이상. */
+.consult-done-actions{display:flex;justify-content:center;gap:.6rem;margin-top:1.3rem}
+.consult-done-actions .dialog-ok{margin-top:0}
+.copy-consult{min-height:2.75rem;padding:0 1.2rem;border:1px solid var(--ink);background:transparent;font-size:.875rem;font-weight:700}
+.copy-consult:hover{background:var(--ink);color:var(--cream)}
+#consult-dialog .pay-note{line-height:1.7;word-break:keep-all}
+#consult-dialog h2{word-break:keep-all}   /* 제목이 단어 중간(주/세요)에서 끊기지 않게 */
+@media (max-width:640px){.consult-done-actions{flex-direction:column}.consult-done-actions button{width:100%}}
